@@ -10,3 +10,21 @@
       state: latest
       update_cache: yes
 
+  - name: Install PHP
+    apt:
+      name: [
+        "php7.2",
+        "php7.2-mysql",
+        "php7.2-mbstring",
+        "php7.2-xml",
+        "php7.2-curl" ]
+      state: present
+
+
+  - name: Install Apache2
+    apt:
+      name: [
+        "apache2",
+        "libapache2-mod-php" ]
+      state: present
+
