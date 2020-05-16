@@ -10,6 +10,11 @@
       state: latest
       update_cache: yes
 
+  - name: install python3 mysql
+    apt:
+      name: "python3-pymysql"
+      state: present
+
   - name: Install PHP
     apt:
       name: [
@@ -20,7 +25,6 @@
         "php7.2-curl" ]
       state: present
 
-
   - name: Install Apache2
     apt:
       name: [
@@ -28,3 +32,51 @@
         "libapache2-mod-php" ]
       state: present
 
+  - name: Enable Apache modules
+    apache2_module:
+      state: present
+      name: "xml2enc"
+
+  - name: Make sure Apache2 service is running
+    systemd:
+      state: started
+      name: apache2
+      enabled: yes
+
+  - name: Install MySQL
+    apt:
+      name: [
+        "mysql-server",
+        "mysql-client",    
+        "mysql-common" ]
+      state: present
+
+  - name: Make sure mysql service is running
+    systemd:                
+      state: started        
+      name: mysql   
+      enabled: yes          
+
+  ### current mysql_user module seems to have bug with ubuntu as by defult it uses auth_socket
+  - name: set root password
+    command: mysql -uroot mysql -e "update user set authentication_string=PASSWORD('mutillidae') where user='root';"
+
+  - name: update pluginto use native_password
+    command: mysql -uroot mysql -e "update user set plugin='mysql_native_password' where user='root';"
+
+  - name: flush privileges
+    command: mysql -uroot mysql -e "flush privileges;"
+
+  - name: Create .my.cnf
+    template:
+      src: "my.cnf.j2"
+      dest: "/root/.my.cnf"
+      owner: root
+      group: root
+      mode: 0600
+                            
+  - name: clone mutillidae repo 
+    git:
+      repo: "https://github.com/webpwnized/mutillidae.git"
+      dest: /var/www/html/mutillidae
+      clone: yes
